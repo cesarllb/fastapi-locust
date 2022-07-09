@@ -1,0 +1,47 @@
+17:35:46,716 passlib.registry DEBUG registered 'bcrypt' handler: <class 'passlib.handlers.bcrypt.bcrypt'>
+17:35:46,720 uvicorn.error INFO Started server process [93034]
+17:35:46,720 uvicorn.error INFO Waiting for application startup.
+17:35:46,720 uvicorn.error INFO Application startup complete.
+17:37:57,33 fastapi_server INFO rid=IOMETF start request path=/docs
+17:37:57,33 fastapi_server INFO rid=IOMETF completed_in=0.38ms status_code=200
+17:37:57,333 fastapi_server INFO rid=703QKY start request path=/openapi.json
+17:37:57,338 fastapi_server INFO rid=703QKY completed_in=4.74ms status_code=200
+17:38:08,131 fastapi_server INFO rid=H1NYXJ start request path=/get/db
+17:38:08,138 fastapi_server INFO rid=H1NYXJ completed_in=0.36ms status_code=200
+17:38:34,169 passlib.registry DEBUG registered 'bcrypt' handler: <class 'passlib.handlers.bcrypt.bcrypt'>
+17:38:34,180 uvicorn.error INFO Started server process [94573]
+17:38:34,181 uvicorn.error INFO Waiting for application startup.
+17:38:34,181 uvicorn.error INFO Application startup complete.
+17:38:34,182 uvicorn.error ERROR [Errno 98] error while attempting to bind on address ('127.0.0.1', 8000): address already in use
+17:38:34,182 uvicorn.error INFO Waiting for application shutdown.
+17:38:34,182 uvicorn.error INFO Application shutdown complete.
+17:38:39,59 fastapi_server INFO rid=B8EEQY start request path=/docs
+17:38:39,59 fastapi_server INFO rid=B8EEQY completed_in=0.32ms status_code=200
+17:38:39,369 fastapi_server INFO rid=5BAUWW start request path=/openapi.json
+17:38:39,369 fastapi_server INFO rid=5BAUWW completed_in=0.36ms status_code=200
+17:39:31,986 passlib.registry DEBUG registered 'bcrypt' handler: <class 'passlib.handlers.bcrypt.bcrypt'>
+17:39:31,997 uvicorn.error INFO Started server process [95078]
+17:39:31,997 uvicorn.error INFO Waiting for application startup.
+17:39:31,997 uvicorn.error INFO Application startup complete.
+17:39:31,998 uvicorn.error ERROR [Errno 98] error while attempting to bind on address ('127.0.0.1', 8000): address already in use
+17:39:31,998 uvicorn.error INFO Waiting for application shutdown.
+17:39:31,998 uvicorn.error INFO Application shutdown complete.
+17:39:42,519 passlib.registry DEBUG registered 'bcrypt' handler: <class 'passlib.handlers.bcrypt.bcrypt'>
+17:39:42,530 uvicorn.error INFO Started server process [95263]
+17:39:42,530 uvicorn.error INFO Waiting for application startup.
+17:39:42,531 uvicorn.error INFO Application startup complete.
+17:39:42,531 uvicorn.error INFO Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+17:39:51,630 fastapi_server INFO rid=YIISAY start request path=/docs
+17:39:51,632 fastapi_server INFO rid=YIISAY completed_in=1.45ms status_code=200
+17:39:51,929 fastapi_server INFO rid=DOP0J4 start request path=/openapi.json
+17:39:51,937 fastapi_server INFO rid=DOP0J4 completed_in=8.16ms status_code=200
+17:39:54,728 fastapi_server INFO rid=MYQEQ1 start request path=/get/db
+17:40:25,700 fastapi_server INFO rid=MYQEQ1 completed_in=25478.29ms status_code=200
+17:41:49,772 passlib.registry DEBUG registered 'bcrypt' handler: <class 'passlib.handlers.bcrypt.bcrypt'>
+17:41:49,775 uvicorn.error INFO Started server process [96174]
+17:41:49,775 uvicorn.error INFO Waiting for application startup.
+17:41:49,775 uvicorn.error INFO Application startup complete.
+17:42:06,178 fastapi_server INFO rid=T3G5ZB start request path=/docs
+17:42:06,178 fastapi_server INFO rid=T3G5ZB completed_in=0.28ms status_code=200
+17:42:06,492 fastapi_server INFO rid=HHT6FV start request path=/openapi.json
+17:42:06,497 fastapi_server INFO rid=HHT6FV completed_in=4.69ms status_code=200
