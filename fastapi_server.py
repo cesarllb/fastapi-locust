@@ -124,6 +124,12 @@ async def get_current_active_user(current_user: UserBase = Depends(get_current_u
 async def get_db():
     return fake_users_db
 
+@app.get("/clear/db")
+async def clear_db():
+    global fake_users_db
+    fake_users_db = {}
+    return "db cleared" 
+        
 
 @app.post("/register", response_model=UserBase)
 async def register_user(user: UserRegistrationModel):
