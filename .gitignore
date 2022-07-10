@@ -25,3 +25,4 @@ MANIFEST
 fastapi.log
 *swp
 .vscode
+locustlogs.json
