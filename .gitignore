@@ -26,3 +26,4 @@ fastapi.log
 *swp
 .vscode
 locustlogs.log
+output.json
