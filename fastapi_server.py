@@ -8,6 +8,7 @@ from passlib.context import CryptContext
 from pydantic import BaseModel
 import logging
 import random, string, time
+from fastapi.responses import RedirectResponse
 
 app = FastAPI(
     title="FastAPI Oauth2 Implementation"
@@ -119,6 +120,10 @@ async def get_current_active_user(current_user: UserBase = Depends(get_current_u
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+@app.get("/", include_in_schema=False)
+async def root():
+    # redirects user from root page to swagger doc
+    return RedirectResponse("/docs")
 
 @app.get("/get/db")
 async def get_db():
