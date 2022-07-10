@@ -7,7 +7,9 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
 import logging
-import random, string, time
+import random
+import string
+import time
 from fastapi.responses import RedirectResponse
 
 app = FastAPI(
@@ -30,6 +32,9 @@ fake_users_db = {
 
 }
 
+class DummyPostBody(BaseModel):
+    text: str
+    title: str
 
 class Token(BaseModel):
     access_token: str
@@ -120,21 +125,29 @@ async def get_current_active_user(current_user: UserBase = Depends(get_current_u
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
 
+
 @app.get("/", include_in_schema=False)
 async def root():
     # redirects user from root page to swagger doc
     return RedirectResponse("/docs")
 
+
 @app.get("/get/db")
 async def get_db():
     return fake_users_db
+
 
 @app.get("/clear/db")
 async def clear_db():
     global fake_users_db
     fake_users_db = {}
-    return "db cleared" 
-        
+    return "db cleared"
+
+@app.get("/size/db")
+def get_db_size():
+    global fake_users_db
+    return len(fake_users_db)
+
 
 @app.post("/register", response_model=UserBase)
 async def register_user(user: UserRegistrationModel):
@@ -152,7 +165,8 @@ async def register_user(user: UserRegistrationModel):
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    user = authenticate_user(
+        fake_users_db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -165,20 +179,28 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+
+@app.post('/dummy_post')
+def simple_post_request(body: UserRegistrationModel):
+    return body
+
+
 @app.get("/users/me/", response_model=UserBase)
 async def read_users_me(current_user: UserBase = Depends(get_current_active_user)):
     return current_user
+
 
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
     idem = ''.join(random.choices(string.ascii_uppercase + string.digits, k=6))
     logger.info(f"rid={idem} start request path={request.url.path}")
     start_time = time.time()
-    
+
     response = await call_next(request)
-    
+
     process_time = (time.time() - start_time) * 1000
     formatted_process_time = '{0:.2f}'.format(process_time)
-    logger.info(f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
-    
+    logger.info(
+        f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
+
     return response
