@@ -11,10 +11,28 @@ import random
 import string
 import time
 from fastapi.responses import RedirectResponse
+from models import User
+from database import engine, SessionLocal
+import models
+from sqlalchemy.orm import Session
+from db_utils import add_new_user, flush_users_table, get_all_users, get_users_db_size
+
+# create all models
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="FastAPI Oauth2 Implementation"
+    title="FastAPI Test Application"
 )
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
 
 logging.basicConfig(filename="fastapi.log",
                     filemode='a',
@@ -32,9 +50,11 @@ fake_users_db = {
 
 }
 
+
 class DummyPostBody(BaseModel):
     text: str
     title: str
+
 
 class Token(BaseModel):
     access_token: str
@@ -53,6 +73,9 @@ class UserBase(BaseModel):
 
 class UserRegistrationModel(UserBase):
     password: str
+    
+    class Config:
+        orm_mode = True
 
 
 class UserInDB(UserBase):
@@ -133,34 +156,40 @@ async def root():
 
 
 @app.get("/get/db")
-async def get_db():
-    return fake_users_db
+async def get_db_items(db: Session = Depends(get_db)):
+    return get_all_users(db)
 
 
 @app.get("/clear/db")
-async def clear_db():
-    global fake_users_db
-    fake_users_db = {}
+async def clear_db(db: Session = Depends(get_db)):
+    flush_users_table(db)
     return "db cleared"
 
+
 @app.get("/size/db")
-def get_db_size():
-    global fake_users_db
-    return len(fake_users_db)
+def get_db_size(db: Session = Depends(get_db)):
+    return get_users_db_size(db)   
 
 
-@app.post("/register", response_model=UserBase)
-async def register_user(user: UserRegistrationModel):
+@app.post("/register")
+async def register_user(user: UserRegistrationModel, db: Session = Depends(get_db)):
     user_exist = get_user(fake_users_db, user.username)
     if user_exist:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=f"user with username: <{user.username}> already exist")
     else:
+
         user_data = user.dict()
-        user_data['hashed_password'] = generate_password_hash(user.password)
-        del user_data['password']
-        fake_users_db[user.username] = user_data
-        return user
+        # username = user_data.get("username")
+        # email = user_data.get("email")
+        # disabled = user_data.get("disabled")
+        # password = user_data.get("password")
+        hashed_password = generate_password_hash(user.password)
+        user_data.update({"hashed_password": hashed_password})
+        user = User(
+            **user_data
+        )
+        add_new_user(db, user)
 
 
 @app.post("/token", response_model=Token)
@@ -204,3 +233,4 @@ async def log_requests(request: Request, call_next):
         f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
 
     return response
+
