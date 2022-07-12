@@ -15,7 +15,8 @@ from models import User
 from database import engine, SessionLocal
 import models
 from sqlalchemy.orm import Session
-from db_utils import add_new_user, flush_users_table, get_all_users, get_users_db_size
+from db_utils import (add_new_user, flush_users_table,
+                      get_all_users, get_users_db_size, get_user_by_username)
 
 # create all models
 models.Base.metadata.create_all(bind=engine)
@@ -25,13 +26,14 @@ app = FastAPI(
 )
 
 # Dependency
+
+
 def get_db():
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
-
 
 
 logging.basicConfig(filename="fastapi.log",
@@ -73,23 +75,29 @@ class UserBase(BaseModel):
 
 class UserRegistrationModel(UserBase):
     password: str
-    
+
     class Config:
         orm_mode = True
 
 
 class UserInDB(UserBase):
+    # NOTE Security Issue, repr raw password. for testing
+    password: str
     hashed_password: str
+
+    class Config:
+        orm_mode = True
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-def get_user(db: dict, username: str):
-    if username in db:
-        user_dict = db[username]
-        return UserInDB(**user_dict)
+def get_user(db: Session, username: str):
+    user = get_user_by_username(db, username)
+    if user:
+        user_in_db = UserInDB.from_orm(user)
+        return user_in_db
     return False
 
 
@@ -122,7 +130,7 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     return encoded_jwt
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -137,7 +145,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 
     except JWTError:
         raise credentials_exception
-    user = get_user(fake_users_db, username=token_data.username)
+    user = get_user(db, username=token_data.username)
     if user is None:
         return credentials_exception
     return user
@@ -168,22 +176,19 @@ async def clear_db(db: Session = Depends(get_db)):
 
 @app.get("/size/db")
 def get_db_size(db: Session = Depends(get_db)):
-    return get_users_db_size(db)   
+    return get_users_db_size(db)
 
 
 @app.post("/register")
 async def register_user(user: UserRegistrationModel, db: Session = Depends(get_db)):
-    user_exist = get_user(fake_users_db, user.username)
+    user_exist = get_user(db, user.username)
     if user_exist:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=f"user with username: <{user.username}> already exist")
     else:
 
         user_data = user.dict()
-        # username = user_data.get("username")
-        # email = user_data.get("email")
-        # disabled = user_data.get("disabled")
-        # password = user_data.get("password")
+
         hashed_password = generate_password_hash(user.password)
         user_data.update({"hashed_password": hashed_password})
         user = User(
@@ -193,9 +198,9 @@ async def register_user(user: UserRegistrationModel, db: Session = Depends(get_d
 
 
 @app.post("/token", response_model=Token)
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(
-        fake_users_db, form_data.username, form_data.password)
+        db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -233,4 +238,3 @@ async def log_requests(request: Request, call_next):
         f"rid={idem} completed_in={formatted_process_time}ms status_code={response.status_code}")
 
     return response
-
