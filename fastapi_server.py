@@ -179,7 +179,7 @@ def get_db_size(db: Session = Depends(get_db)):
     return get_users_db_size(db)
 
 
-@app.post("/register")
+@app.post("/register", status_code=status.HTTP_201_CREATED)
 async def register_user(user: UserRegistrationModel, db: Session = Depends(get_db)):
     user_exist = get_user(db, user.username)
     if user_exist:
@@ -194,8 +194,16 @@ async def register_user(user: UserRegistrationModel, db: Session = Depends(get_d
         user = User(
             **user_data
         )
-        add_new_user(db, user)
-
+        try:
+            add_new_user(db, user)
+            return {
+                "msg": f"created User <{user.username}>"
+            }
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=str(e)
+            )
 
 @app.post("/token", response_model=Token)
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
